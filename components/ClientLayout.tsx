@@ -7,17 +7,24 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
+    let isMounted = true;
+
+    const normalTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsLoading(false);
+      }
     }, 1500);
 
-    const failSafe = setTimeout(() => {
-      setIsLoading(false);
+    const failSafeTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsLoading(false);
+      }
     }, 3000);
 
     return () => {
-      clearTimeout(timer);
-      clearTimeout(failSafe);
+      isMounted = false;
+      clearTimeout(normalTimer);
+      clearTimeout(failSafeTimer);
     };
   }, []);
 
@@ -28,7 +35,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <LoadingScreen />
-      <div className="hidden">{children}</div>
+      <div style={{ display: "none" }}>{children}</div>
     </>
   );
 }
