@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 187 100% 50%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 187 100% 50%;
+    --radius: 0.5rem;
+    --neon-cyan: #00f7ff;
+    --neon-pink: #ff2ced;
+    --neon-primary: #00f7ff;
+    --neon-secondary: #ff2ced;
+    --neon-bg: #111827;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+@layer components {
+  .glassmorphism {
+    background: rgba(16, 18, 27, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+
+  .text-neon-cyan {
+    color: var(--neon-cyan);
+  }
+
+  .bg-neon-cyan {
+    background-color: var(--neon-cyan);
+  }
+
+  .border-neon-cyan {
+    border-color: var(--neon-cyan);
+  }
+
+  .text-neon-pink {
+    color: var(--neon-pink);
+  }
+
+  .bg-neon-pink {
+    background-color: var(--neon-pink);
+  }
+
+  .border-neon-pink {
+    border-color: var(--neon-pink);
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan), 0 0 15px var(--neon-cyan);
+    }
+    50% {
+      box-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-cyan);
+    }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  .form-input {
+    @apply bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-transparent focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan transition-colors;
+  }
+
+  .form-floating-label {
+    @apply text-gray-400 pointer-events-none transition-all bg-transparent;
+  }
+
+  .error-message {
+    @apply text-red-400 text-sm;
+  }
+
+  .submit-btn {
+    @apply bg-neon-cyan text-black font-semibold hover:bg-cyan-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .social-login-btn {
+    @apply bg-gray-800 text-white hover:bg-gray-700 transition-colors;
+  }
+
+  .auth-form {
+    @apply bg-gray-900/80 border border-gray-800;
+  }
+
+  .form-radio {
+    @apply accent-neon-cyan;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00f7ff;
+}
+
+/* Selection */
+::selection {
+  background: rgba(0, 247, 255, 0.3);
+  color: #fff;
+}

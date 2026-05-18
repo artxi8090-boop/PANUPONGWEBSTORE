@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --neon-primary: #00f0ff;
+  --neon-secondary: #ff00e6;
+  --neon-dark: #0a0a1a;
+  --neon-bg: #0d0d22;
+  --neon-error: #ff3366;
+}
+
+body {
+  background-color: var(--neon-bg);
+  color: var(--neon-primary);
+}
+
+.auth-form {
+  background: rgba(10, 10, 26, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+.auth-form h1 {
+  background: linear-gradient(90deg, var(--neon-primary), var(--neon-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.form-input {
+  background: rgba(13, 13, 34, 0.5);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  border-color: var(--neon-primary);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.form-floating-label {
+  color: rgba(0, 240, 255, 0.7);
+  transition: all 0.2s ease;
+}
+
+.form-input:focus ~ .form-floating-label,
+.form-input:not(:placeholder-shown) ~ .form-floating-label {
+  transform: translateY(-1.5rem);
+  font-size: 0.75rem;
+  color: var(--neon-primary);
+}
+
+.social-login-btn {
+  background: rgba(13, 13, 34, 0.5);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.social-login-btn:hover {
+  border-color: var(--neon-secondary);
+  box-shadow: 0 0 15px rgba(255, 0, 230, 0.5);
+}
+
+.submit-btn {
+  background: linear-gradient(90deg, var(--neon-primary), var(--neon-secondary));
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.5), 0 0 20px rgba(255, 0, 230, 0.3);
+  transform: translateY(-2px);
+}
+
+.error-message {
+  color: var(--neon-error);
+  font-size: 0.875rem;
+}
