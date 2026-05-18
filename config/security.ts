@@ -27,7 +27,7 @@ type CspDirectives = Partial<Record<CspDirective, string[]>>;
 
 const defaultSources: CspDirectives = {
   defaultSrc: ["'self'"],
-  scriptSrc: ["'self'"],
+  scriptSrc: ["'self'", "'unsafe-inline'"],
   styleSrc: ["'self'", "'unsafe-inline'"],
   imgSrc: ["'self'", "data:", "blob:"],
   fontSrc: ["'self'", "data:"],
@@ -62,8 +62,6 @@ export function getStrictCSP(options?: { nonce?: string; directives?: CspDirecti
     const nonceValue = `'nonce-${nonce}'`;
     const currentScript = merged.scriptSrc ?? [];
     merged.scriptSrc = [...currentScript, nonceValue];
-    const currentStyle = merged.styleSrc ?? [];
-    merged.styleSrc = [...currentStyle, nonceValue];
   }
 
   const parts: string[] = [];
