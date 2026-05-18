@@ -80,14 +80,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   const response = NextResponse.next();
-  const cspNonce = crypto.randomUUID();
 
   for (const [key, value] of securityHeaders) {
     response.headers.set(key, value);
   }
 
-  response.headers.set("Content-Security-Policy", getStrictCSP({ nonce: cspNonce }));
-  response.headers.set("X-Request-Id", cspNonce);
+  response.headers.set("Content-Security-Policy", getStrictCSP());
 
   if (isPublicPath(pathname)) {
     return response;
@@ -118,7 +116,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     for (const [key, value] of securityHeaders) {
       forbiddenResponse.headers.set(key, value);
     }
-    forbiddenResponse.headers.set("Content-Security-Policy", getStrictCSP({ nonce: cspNonce }));
+    forbiddenResponse.headers.set("Content-Security-Policy", getStrictCSP());
     return forbiddenResponse;
   }
 

@@ -37,4 +37,7 @@ next-env.d.ts
 .vscode/
 .idea/
 
-.vercel
+# Database (legacy SQLite)
+data/*.db
+data/*.db-shm
+data/*.db-wal

@@ -45,8 +45,8 @@ function kebabCase(str: string): string {
   return str.replace(/([A-Z])/g, "-$1").toLowerCase();
 }
 
-export function getStrictCSP(options?: { nonce?: string; directives?: CspDirectives }): string {
-  const { nonce, directives } = options ?? {};
+export function getStrictCSP(options?: { directives?: CspDirectives }): string {
+  const { directives } = options ?? {};
   const merged: CspDirectives = { ...defaultSources };
 
   if (directives) {
@@ -56,12 +56,6 @@ export function getStrictCSP(options?: { nonce?: string; directives?: CspDirecti
         merged[key] = [...existing, ...value];
       }
     }
-  }
-
-  if (nonce) {
-    const nonceValue = `'nonce-${nonce}'`;
-    const currentScript = merged.scriptSrc ?? [];
-    merged.scriptSrc = [...currentScript, nonceValue];
   }
 
   const parts: string[] = [];
