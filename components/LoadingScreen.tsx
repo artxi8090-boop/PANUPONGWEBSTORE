@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoadingScreen() {
   const [progress, setProgress] = useState(0);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -21,72 +21,88 @@ export default function LoadingScreen() {
       });
     }, 100);
 
+    const maxTimer = setTimeout(() => {
+      if (!completed) {
+        completed = true;
+        clearInterval(interval);
+        setProgress(100);
+      }
+    }, 1800);
+
     return () => {
       if (!completed) clearInterval(interval);
+      clearTimeout(maxTimer);
     };
   }, []);
 
+  useEffect(() => {
+    if (progress >= 100) {
+      const fadeTimer = setTimeout(() => {
+        setVisible(false);
+      }, 300);
+      return () => clearTimeout(fadeTimer);
+    }
+  }, [progress]);
+
+  if (!visible) return null;
+
   return (
-    <motion.div
-      initial={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+    <div
       className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center"
+      style={{ transition: "opacity 0.3s ease-out", opacity: progress >= 100 ? 0 : 1 }}
     >
-      {/* Logo Animation */}
-      <motion.div
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ duration: 0.8, type: "spring" }}
+      <div
         className="mb-8"
+        style={{
+          animation: "logoIn 0.8s ease-out forwards",
+        }}
       >
         <img
           src="/logo.png"
           alt="Panupongwebstore Logo"
           className="w-24 h-auto object-contain"
         />
-      </motion.div>
+      </div>
 
-      {/* Loading Text */}
-      <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+      <h2
         className="text-2xl font-bold text-white mb-4"
+        style={{
+          animation: "fadeUp 0.6s ease-out 0.3s both",
+        }}
       >
         Panupongwebstore
-      </motion.h2>
+      </h2>
 
-      {/* Progress Bar */}
       <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden mb-4">
-        <motion.div
+        <div
           className="h-full bg-gradient-to-r from-neon-cyan to-neon-pink"
-          initial={{ width: 0 }}
-          animate={{ width: `${Math.min(progress, 100)}%` }}
-          transition={{ duration: 0.3 }}
+          style={{
+            width: `${Math.min(progress, 100)}%`,
+            transition: "width 0.3s ease-out",
+          }}
         />
       </div>
 
-      {/* Loading Percentage */}
-      <motion.p
+      <p
         className="text-sm text-gray-400 font-mono"
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 1.5, repeat: Infinity }}
+        style={{
+          animation: "pulse 1.5s ease-in-out infinite",
+        }}
       >
         {Math.min(Math.round(progress), 100)}%
-      </motion.p>
+      </p>
 
-      {/* Animated Dots */}
       <div className="flex gap-2 mt-6">
         {[0, 1, 2].map((i) => (
-          <motion.div
+          <div
             key={i}
             className="w-2 h-2 rounded-full bg-neon-cyan"
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 0.6, delay: i * 0.2, repeat: Infinity }}
+            style={{
+              animation: `bounce 0.6s ease-in-out ${i * 0.2}s infinite`,
+            }}
           />
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }

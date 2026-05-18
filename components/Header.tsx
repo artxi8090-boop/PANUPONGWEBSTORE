@@ -15,24 +15,45 @@ export function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [shouldShow, setShouldShow] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
+  const hasCheckedAuth = useRef(false);
 
   useEffect(() => {
-    const path = window.location.pathname;
-    if (path === "/login" || path === "/signup") {
-      setShouldShow(false);
+    try {
+      const path = window.location.pathname;
+      if (path === "/login" || path === "/signup") {
+        setShouldShow(false);
+      }
+    } catch {
+      setShouldShow(true);
     }
   }, []);
 
   useEffect(() => {
-    checkAuth();
+    if (hasCheckedAuth.current) return;
+    hasCheckedAuth.current = true;
+
+    checkAuth().catch(() => {
+    });
   }, [checkAuth]);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      try {
+        setIsScrolled(window.scrollY > 10);
+      } catch {
+        setIsScrolled(false);
+      }
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    try {
+      window.addEventListener("scroll", handleScroll);
+    } catch {
+    }
+    return () => {
+      try {
+        window.removeEventListener("scroll", handleScroll);
+      } catch {
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -41,12 +62,23 @@ export function Header() {
         setShowUserMenu(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    try {
+      document.addEventListener("mousedown", handleClickOutside);
+    } catch {
+    }
+    return () => {
+      try {
+        document.removeEventListener("mousedown", handleClickOutside);
+      } catch {
+      }
+    };
   }, []);
 
   const handleLogout = async () => {
-    await logout();
+    try {
+      await logout();
+    } catch {
+    }
     setShowUserMenu(false);
   };
 

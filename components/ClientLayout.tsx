@@ -9,17 +9,26 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
+    }, 1500);
 
-    return () => clearTimeout(timer);
+    const failSafe = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(failSafe);
+    };
   }, []);
+
+  if (!isLoading) {
+    return <>{children}</>;
+  }
 
   return (
     <>
-      {isLoading && <LoadingScreen />}
-      <div className={isLoading ? "hidden" : ""}>
-        {children}
-      </div>
+      <LoadingScreen />
+      <div className="hidden">{children}</div>
     </>
   );
 }
