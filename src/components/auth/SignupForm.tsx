@@ -284,6 +284,7 @@ export default function SignupForm() {
         <motion.button
           whileTap={{ scale: 0.95 }}
           type="button"
+          onClick={() => (window.location.href = "/api/auth/github")}
           className="social-login-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -294,7 +295,8 @@ export default function SignupForm() {
         <motion.button
           whileTap={{ scale: 0.95 }}
           type="button"
-          className="social-login-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg"
+          disabled
+          className="social-login-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg opacity-50 cursor-not-allowed"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
