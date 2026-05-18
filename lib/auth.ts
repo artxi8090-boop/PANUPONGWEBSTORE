@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { randomBytes, createHash } from "crypto";
-import { sql, ensureTablesInitialized } from "./db";
+import { randomBytes } from "crypto";
+import { ensureTablesInitialized, getDb } from "./db";
 import { loginSchema, signupSchema, LoginInput, SignupInput } from "./validations";
 
 const JWT_EXPIRES_IN = "7d";
@@ -50,6 +50,7 @@ export function validateSignupInput(data: unknown): { success: boolean; data?: S
 export async function checkRateLimit(ip: string): Promise<{ allowed: boolean; retryAfter?: number }> {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
 
     const result = await sql`
@@ -73,6 +74,7 @@ export async function checkRateLimit(ip: string): Promise<{ allowed: boolean; re
 export async function recordLoginAttempt(ip: string, email: string): Promise<void> {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     await sql`
       INSERT INTO login_attempts (ip_address, email) VALUES (${ip}, ${email})
     `;
@@ -84,6 +86,7 @@ export async function recordLoginAttempt(ip: string, email: string): Promise<voi
 export async function checkAccountLockout(email: string): Promise<{ locked: boolean; remainingMs?: number }> {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     const result = await sql`
       SELECT is_locked, locked_until, failed_login_attempts FROM users WHERE email = ${email}
     `;
@@ -116,6 +119,7 @@ export async function checkAccountLockout(email: string): Promise<{ locked: bool
 export async function incrementFailedAttempts(email: string): Promise<void> {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     const now = Date.now();
 
     const userResult = await sql`
@@ -146,6 +150,7 @@ export async function incrementFailedAttempts(email: string): Promise<void> {
 export async function resetFailedAttempts(email: string): Promise<void> {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     await sql`
       UPDATE users SET failed_login_attempts = 0, is_locked = false, locked_until = 0 WHERE email = ${email}
     `;
@@ -157,6 +162,7 @@ export async function resetFailedAttempts(email: string): Promise<void> {
 export async function getUserByEmail(email: string) {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     const result = await sql`
       SELECT id, name, email, password_hash, role,
              email_verified, is_locked, locked_until,
@@ -188,6 +194,7 @@ export async function getUserByEmail(email: string) {
 export async function getUserById(userId: string) {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     const result = await sql`
       SELECT id, name, email, role, email_verified, created_at
       FROM users WHERE id = ${userId}
@@ -213,6 +220,7 @@ export async function getUserById(userId: string) {
 export async function createUser(name: string, email: string, passwordHash: string, role: string): Promise<string> {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     const id = randomBytes(16).toString("hex");
 
     await sql`
@@ -230,6 +238,7 @@ export async function createUser(name: string, email: string, passwordHash: stri
 export async function cleanOldLoginAttempts(): Promise<void> {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
     await sql`DELETE FROM login_attempts WHERE attempted_at < ${windowStart}::timestamp`;
   } catch (error) {
@@ -240,6 +249,7 @@ export async function cleanOldLoginAttempts(): Promise<void> {
 export async function cleanExpiredSessions(): Promise<void> {
   try {
     await ensureTablesInitialized();
+    const sql = await getDb();
     const now = Math.floor(Date.now() / 1000);
     await sql`DELETE FROM sessions WHERE expires_at < ${now}`;
   } catch (error) {

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sql, ensureTablesInitialized } from "@/lib/db";
+import { ensureTablesInitialized, getDb } from "@/lib/db";
 
 async function ensureOnlineTable(): Promise<void> {
+  const sql = await getDb();
   await sql`
     CREATE TABLE IF NOT EXISTS online_users (
       id SERIAL PRIMARY KEY,
@@ -16,6 +17,7 @@ export async function GET() {
   try {
     await ensureTablesInitialized();
     await ensureOnlineTable();
+    const sql = await getDb();
 
     const fiveMinutesAgo = Math.floor(Date.now() / 1000) - 300;
     await sql`DELETE FROM online_users WHERE last_seen < ${fiveMinutesAgo}`;
@@ -40,6 +42,7 @@ export async function POST(request: NextRequest) {
 
     await ensureTablesInitialized();
     await ensureOnlineTable();
+    const sql = await getDb();
 
     const now = Math.floor(Date.now() / 1000);
 

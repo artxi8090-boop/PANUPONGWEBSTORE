@@ -1,9 +1,37 @@
-import { sql, type VercelPoolClient } from "@vercel/postgres";
+// Build-time guard: Next.js sets NEXT_PHASE during build
+const IS_BUILD_TIME = process.env.NEXT_PHASE?.includes("build") ?? false;
 
-const TABLES_INITIALIZED_KEY = "tables_initialized";
+type SqlFunction = typeof import("@vercel/postgres").sql;
+
+let sqlInstance: SqlFunction | null = null;
+let tablesInitialized = false;
+let initPromise: Promise<void> | null = null;
+
+async function getSql(): Promise<SqlFunction> {
+  if (IS_BUILD_TIME) {
+    throw new Error("[DB] Database connection is not available during build time");
+  }
+
+  if (!sqlInstance) {
+    const mod = await import("@vercel/postgres");
+    sqlInstance = mod.sql;
+  }
+  return sqlInstance;
+}
 
 async function initializeTables(): Promise<void> {
+  if (tablesInitialized) return;
+  if (IS_BUILD_TIME) return;
+
+  const postgresUrl = process.env.POSTGRES_URL;
+  if (!postgresUrl) {
+    console.warn("[DB] POSTGRES_URL not set. Database operations will fail at runtime.");
+    return;
+  }
+
   try {
+    const sql = await getSql();
+
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -45,21 +73,28 @@ async function initializeTables(): Promise<void> {
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token_hash)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id)`;
+
+    tablesInitialized = true;
   } catch (error) {
-    console.error("Database initialization failed:", error);
+    console.error("[DB] Table initialization failed:", error);
     throw new Error("Database connection failed");
   }
 }
 
-let initPromise: Promise<void> | null = null;
-
 export async function ensureTablesInitialized(): Promise<void> {
+  if (IS_BUILD_TIME) return;
+
+  const postgresUrl = process.env.POSTGRES_URL;
+  if (!postgresUrl) return;
+
   if (!initPromise) {
     initPromise = initializeTables();
   }
   return initPromise;
 }
 
-export { sql };
+export async function getDb() {
+  return getSql();
+}
 
-export type { VercelPoolClient };
+export type VercelPoolClient = import("@vercel/postgres").VercelPool;
