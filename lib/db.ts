@@ -1,20 +1,24 @@
 // Build-time guard: Next.js sets NEXT_PHASE during build
 const IS_BUILD_TIME = process.env.NEXT_PHASE?.includes("build") ?? false;
 
-type SqlFunction = typeof import("@vercel/postgres").sql;
+type SqlFn = ReturnType<typeof import("@neondatabase/serverless").neon>;
 
-let sqlInstance: SqlFunction | null = null;
+let sqlInstance: SqlFn | null = null;
 let tablesInitialized = false;
 let initPromise: Promise<void> | null = null;
 
-async function getSql(): Promise<SqlFunction> {
+async function getSql(): Promise<SqlFn> {
   if (IS_BUILD_TIME) {
     throw new Error("[DB] Database connection is not available during build time");
   }
 
   if (!sqlInstance) {
-    const mod = await import("@vercel/postgres");
-    sqlInstance = mod.sql;
+    const { neon } = await import("@neondatabase/serverless");
+    const databaseUrl = process.env.POSTGRES_URL ?? process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error("[DB] POSTGRES_URL or DATABASE_URL environment variable is required");
+    }
+    sqlInstance = neon(databaseUrl);
   }
   return sqlInstance;
 }
@@ -22,12 +26,6 @@ async function getSql(): Promise<SqlFunction> {
 async function initializeTables(): Promise<void> {
   if (tablesInitialized) return;
   if (IS_BUILD_TIME) return;
-
-  const postgresUrl = process.env.POSTGRES_URL;
-  if (!postgresUrl) {
-    console.warn("[DB] POSTGRES_URL not set. Database operations will fail at runtime.");
-    return;
-  }
 
   try {
     const sql = await getSql();
@@ -84,8 +82,8 @@ async function initializeTables(): Promise<void> {
 export async function ensureTablesInitialized(): Promise<void> {
   if (IS_BUILD_TIME) return;
 
-  const postgresUrl = process.env.POSTGRES_URL;
-  if (!postgresUrl) return;
+  const databaseUrl = process.env.POSTGRES_URL ?? process.env.DATABASE_URL;
+  if (!databaseUrl) return;
 
   if (!initPromise) {
     initPromise = initializeTables();
@@ -97,4 +95,4 @@ export async function getDb() {
   return getSql();
 }
 
-export type VercelPoolClient = import("@vercel/postgres").VercelPool;
+export type NeonClient = import("@neondatabase/serverless").Client;

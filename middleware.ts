@@ -14,6 +14,8 @@ const PUBLIC_PATHS = [
   "/signup",
   "/api/auth/login",
   "/api/auth/signup",
+  "/api/auth/me",
+  "/api/auth/logout",
   "/api/contact",
   "/api/online",
   "/api/projects",
@@ -42,6 +44,10 @@ function isStaticAsset(pathname: string): boolean {
   );
 }
 
+function isApiRoute(pathname: string): boolean {
+  return pathname.startsWith("/api/");
+}
+
 async function verifyAuthToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify<JWTPayload>(token, JWT_SECRET, {
@@ -57,6 +63,13 @@ function createRedirectToLogin(request: NextRequest): NextResponse {
   const response = NextResponse.redirect(new URL("/login", request.url));
   response.cookies.delete("auth_token");
   return response;
+}
+
+function createUnauthorizedJsonResponse(): NextResponse {
+  return NextResponse.json(
+    { success: false, error: "Not authenticated" },
+    { status: 401 }
+  );
 }
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
@@ -83,12 +96,20 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const token = request.cookies.get("auth_token")?.value;
 
   if (!token) {
+    if (isApiRoute(pathname)) {
+      return createUnauthorizedJsonResponse();
+    }
     return createRedirectToLogin(request);
   }
 
   const payload = await verifyAuthToken(token);
 
   if (!payload) {
+    if (isApiRoute(pathname)) {
+      const apiResponse = createUnauthorizedJsonResponse();
+      apiResponse.cookies.delete("auth_token");
+      return apiResponse;
+    }
     return createRedirectToLogin(request);
   }
 

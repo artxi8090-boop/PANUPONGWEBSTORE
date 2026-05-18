@@ -23,7 +23,8 @@ export async function GET() {
     await sql`DELETE FROM online_users WHERE last_seen < ${fiveMinutesAgo}`;
 
     const result = await sql`SELECT COUNT(*) as count FROM online_users`;
-    const count = Number((result.rows[0] as { count: string | number }).count);
+    const rows = Array.isArray(result) ? result : [];
+    const count = rows.length > 0 ? Number((rows[0] as Record<string, unknown>).count ?? 0) : 0;
 
     return NextResponse.json({ online: count });
   } catch (error) {
@@ -56,7 +57,8 @@ export async function POST(request: NextRequest) {
     await sql`DELETE FROM online_users WHERE last_seen < ${fiveMinutesAgo}`;
 
     const result = await sql`SELECT COUNT(*) as count FROM online_users`;
-    const count = Number((result.rows[0] as { count: string | number }).count);
+    const rows = Array.isArray(result) ? result : [];
+    const count = rows.length > 0 ? Number((rows[0] as Record<string, unknown>).count ?? 0) : 0;
 
     return NextResponse.json({ online: count });
   } catch (error) {

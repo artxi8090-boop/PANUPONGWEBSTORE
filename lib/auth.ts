@@ -47,6 +47,11 @@ export function validateSignupInput(data: unknown): { success: boolean; data?: S
   return { success: true, data: result.data };
 }
 
+function getFirstRow<T>(result: unknown): T | undefined {
+  const rows = Array.isArray(result) ? result : [];
+  return (rows[0] as T) ?? undefined;
+}
+
 export async function checkRateLimit(ip: string): Promise<{ allowed: boolean; retryAfter?: number }> {
   try {
     await ensureTablesInitialized();
@@ -58,7 +63,8 @@ export async function checkRateLimit(ip: string): Promise<{ allowed: boolean; re
       WHERE ip_address = ${ip} AND attempted_at > ${windowStart}::timestamp
     `;
 
-    const count = Number((result.rows[0] as { count: string | number }).count);
+    const row = getFirstRow<{ count: string | number }>(result);
+    const count = Number(row?.count ?? 0);
 
     if (count >= MAX_RATE_LIMIT_ATTEMPTS) {
       return { allowed: false, retryAfter: RATE_LIMIT_WINDOW_MS / 1000 };
@@ -91,7 +97,7 @@ export async function checkAccountLockout(email: string): Promise<{ locked: bool
       SELECT is_locked, locked_until, failed_login_attempts FROM users WHERE email = ${email}
     `;
 
-    const user = result.rows[0] as { is_locked: boolean; locked_until: string | number; failed_login_attempts: number } | undefined;
+    const user = getFirstRow<{ is_locked: boolean; locked_until: string | number; failed_login_attempts: number }>(result);
 
     if (!user) return { locked: false };
 
@@ -126,7 +132,7 @@ export async function incrementFailedAttempts(email: string): Promise<void> {
       SELECT failed_login_attempts FROM users WHERE email = ${email}
     `;
 
-    const user = userResult.rows[0] as { failed_login_attempts: number } | undefined;
+    const user = getFirstRow<{ failed_login_attempts: number }>(userResult);
 
     if (!user) return;
 
@@ -170,7 +176,7 @@ export async function getUserByEmail(email: string) {
       FROM users WHERE email = ${email}
     `;
 
-    const row = result.rows[0];
+    const row = getFirstRow<Record<string, unknown>>(result);
     if (!row) return undefined;
 
     return {
@@ -200,7 +206,7 @@ export async function getUserById(userId: string) {
       FROM users WHERE id = ${userId}
     `;
 
-    const row = result.rows[0];
+    const row = getFirstRow<Record<string, unknown>>(result);
     if (!row) return undefined;
 
     return {
