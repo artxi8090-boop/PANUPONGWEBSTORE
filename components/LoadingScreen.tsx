@@ -7,9 +7,13 @@ export default function LoadingScreen() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    let interval: ReturnType<typeof setInterval>;
+    let completed = false;
+
+    interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
+          completed = true;
           clearInterval(interval);
           return 100;
         }
@@ -17,7 +21,9 @@ export default function LoadingScreen() {
       });
     }, 100);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (!completed) clearInterval(interval);
+    };
   }, []);
 
   return (

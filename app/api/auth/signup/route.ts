@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateSignupInput, hashPassword, getUserByEmail, createUser } from "@/lib/auth";
+import { validateSignupInput, hashPassword, getUserByEmail, createUser, checkRateLimit, recordLoginAttempt } from "@/lib/auth";
 import { createAndSetSession } from "@/lib/auth/jwt";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || "unknown";
+
+    const rateLimit = await checkRateLimit(ip);
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ success: false, error: "Too many attempts. Please try again later.", retryAfter: rateLimit.retryAfter }, { status: 429 });
+    }
+
     const body = await request.json();
 
     const validationResult = validateSignupInput(body);
@@ -19,6 +26,8 @@ export async function POST(request: NextRequest) {
 
     const { name, email, password, role } = validationResult.data!;
     const sanitizedEmail = email.toLowerCase().trim();
+
+    await recordLoginAttempt(ip, sanitizedEmail);
 
     const existingUser = await getUserByEmail(sanitizedEmail);
     if (existingUser) {

@@ -3,20 +3,11 @@ import { randomBytes } from "crypto";
 import { ensureTablesInitialized, getDb } from "./db";
 import { loginSchema, signupSchema, LoginInput, SignupInput } from "./validations";
 
-const JWT_EXPIRES_IN = "7d";
 const BCRYPT_ROUNDS = 12;
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const MAX_RATE_LIMIT_ATTEMPTS = 20;
-
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET environment variable is required");
-  }
-  return secret;
-}
 
 export function hashPassword(password: string): string {
   return bcrypt.hashSync(password, BCRYPT_ROUNDS);
@@ -24,11 +15,6 @@ export function hashPassword(password: string): string {
 
 export function verifyPassword(password: string, hash: string): boolean {
   return bcrypt.compareSync(password, hash);
-}
-
-export function generateToken(userId: string, email: string, role: string): string {
-  const { generateToken: genToken } = require("./auth/jwt");
-  return genToken(userId, email, role);
 }
 
 export function validateLoginInput(data: unknown): { success: boolean; data?: LoginInput; error?: string } {

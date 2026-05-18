@@ -28,7 +28,7 @@ type CspDirectives = Partial<Record<CspDirective, string[]>>;
 const defaultSources: CspDirectives = {
   defaultSrc: ["'self'"],
   scriptSrc: ["'self'"],
-  styleSrc: ["'self'"],
+  styleSrc: ["'self'", "'unsafe-inline'"],
   imgSrc: ["'self'", "data:", "blob:"],
   fontSrc: ["'self'", "data:"],
   connectSrc: ["'self'"],

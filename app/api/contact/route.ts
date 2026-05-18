@@ -7,6 +7,15 @@ const contactSchema = z.object({
   message: z.string().min(1, "Message is required").max(2000, "Message must be less than 2000 characters"),
 });
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 async function sendEmail(data: { name: string; email: string; message: string }) {
   const resendApiKey = process.env.RESEND_API_KEY;
 
@@ -20,13 +29,13 @@ async function sendEmail(data: { name: string; email: string; message: string })
       body: JSON.stringify({
         from: "Contact Form <onboarding@resend.dev>",
         to: [process.env.CONTACT_EMAIL || "admin@panupongwebstore.com"],
-        subject: `New Contact Form Message from ${data.name}`,
+        subject: `New Contact Form Message from ${escapeHtml(data.name)}`,
         html: `
           <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${data.name}</p>
-          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
           <p><strong>Message:</strong></p>
-          <p>${data.message.replace(/\n/g, "<br>")}</p>
+          <p>${escapeHtml(data.message).replace(/\n/g, "<br>")}</p>
         `,
         reply_to: data.email,
       }),
