@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAndSetSession } from "@/lib/auth/jwt";
+import { SignJWT } from "jose";
 import { getUserByEmail, createUser } from "@/lib/auth";
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET ?? "fallback-secret-must-be-overridden-in-production"
+);
+const COOKIE_NAME = "auth_token";
 
 export async function GET(request: NextRequest) {
   try {
@@ -81,7 +86,6 @@ export async function GET(request: NextRequest) {
     }
 
     const sanitizedEmail = githubUser.email.toLowerCase().trim();
-    const githubId = `github_${githubUser.id}`;
 
     let existingUser = await getUserByEmail(sanitizedEmail);
 
@@ -95,9 +99,24 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    await createAndSetSession(existingUser.id, existingUser.email, existingUser.role);
+    const token = await new SignJWT({
+      sub: existingUser.id,
+      email: existingUser.email,
+      role: existingUser.role,
+    })
+      .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+      .setIssuedAt()
+      .setExpirationTime("1d")
+      .sign(JWT_SECRET);
 
     const response = NextResponse.redirect(new URL("/", request.url));
+    response.cookies.set(COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 86400,
+    });
     response.cookies.delete("github_oauth_state");
 
     return response;
