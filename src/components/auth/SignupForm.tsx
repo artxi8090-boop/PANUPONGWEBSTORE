@@ -295,8 +295,8 @@ export default function SignupForm() {
         <motion.button
           whileTap={{ scale: 0.95 }}
           type="button"
-          disabled
-          className="social-login-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg opacity-50 cursor-not-allowed"
+          onClick={() => (window.location.href = "/api/auth/google")}
+          className="social-login-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
